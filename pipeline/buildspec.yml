@@ -1,0 +1,16 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ${ECR_REPO%%/*}
+      - TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:0:7}
+  build:
+    commands:
+      - docker build -t $ECR_REPO:$TAG --build-arg APP_VERSION=$TAG services/orders
+  post_build:
+    commands:
+      - docker push $ECR_REPO:$TAG
+      # Fichier lu par l'action CodeDeployToECS pour remplacer <IMAGE1_NAME> dans taskdef.json
+      - printf '{"ImageURI":"%s"}' $ECR_REPO:$TAG > imageDetail.json
+artifacts:
+  files: [imageDetail.json]

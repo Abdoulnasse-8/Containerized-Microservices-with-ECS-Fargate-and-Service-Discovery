@@ -1,0 +1,28 @@
+{
+  "family": "orders",
+  "requiresCompatibilities": ["FARGATE"],
+  "networkMode": "awsvpc",
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ms-task-execution",
+  "taskRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ms-task",
+  "containerDefinitions": [
+    {
+      "name": "orders",
+      "image": "<IMAGE1_NAME>",
+      "essential": true,
+      "portMappings": [{ "containerPort": 3000 }],
+      "environment": [{ "name": "AWS_XRAY_DAEMON_ADDRESS", "value": "localhost:2000" }],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": { "awslogs-group": "/ecs/orders", "awslogs-region": "eu-north-1", "awslogs-stream-prefix": "ecs" }
+      }
+    },
+    {
+      "name": "xray-daemon",
+      "image": "public.ecr.aws/xray/aws-xray-daemon:latest",
+      "essential": false,
+      "portMappings": [{ "containerPort": 2000, "protocol": "udp" }]
+    }
+  ]
+}

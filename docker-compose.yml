@@ -1,0 +1,17 @@
+# Test local avant de toucher AWS : docker compose up --build
+services:
+  redis: { image: redis:7-alpine }
+  auth:
+    build: ./services/auth
+    environment: { REDIS_HOST: redis, DEMO_PASSWORD: demo, AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR }
+    ports: ["3001:3000"]
+  notifications:
+    build: ./services/notifications
+    environment: { API_KEY: local, AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR }
+  orders:
+    build: ./services/orders
+    environment:
+      AUTH_URL: http://auth:3000
+      NOTIF_URL: http://notifications:3000
+      AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR
+    ports: ["3002:3000"]
