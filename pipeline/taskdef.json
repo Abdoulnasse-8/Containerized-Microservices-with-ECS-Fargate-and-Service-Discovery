@@ -15,7 +15,7 @@
       "environment": [{ "name": "AWS_XRAY_DAEMON_ADDRESS", "value": "localhost:2000" }],
       "logConfiguration": {
         "logDriver": "awslogs",
-        "options": { "awslogs-group": "/ecs/orders", "awslogs-region": "eu-north-1", "awslogs-stream-prefix": "ecs" }
+        "options": { "awslogs-group": "/ecs/orders", "awslogs-region": "<REGION>", "awslogs-stream-prefix": "ecs" }
       }
     },
     {

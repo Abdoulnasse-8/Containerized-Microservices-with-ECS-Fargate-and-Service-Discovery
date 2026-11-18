@@ -4,13 +4,21 @@ phases:
     commands:
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ${ECR_REPO%%/*}
       - TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:0:7}
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
   build:
     commands:
-      - docker build -t $ECR_REPO:$TAG --build-arg APP_VERSION=$TAG services/orders
+      # APP_VERSION (defaut: hash du commit) apparait dans /health ; "bad" simule une version defectueuse
+      - docker build -t $ECR_REPO:$TAG --build-arg APP_VERSION=${APP_VERSION:-$TAG} services/orders
   post_build:
     commands:
       - docker push $ECR_REPO:$TAG
-      # Fichier lu par l'action CodeDeployToECS pour remplacer <IMAGE1_NAME> dans taskdef.json
+      # imageDetail.json : lu par CodeDeployToECS pour remplacer <IMAGE1_NAME> dans taskdef.json
       - printf '{"ImageURI":"%s"}' $ECR_REPO:$TAG > imageDetail.json
+      # Le compte et la region sont injectes ici : rien n'est ecrit en dur dans le depot
+      - sed "s/<ACCOUNT_ID>/$ACCOUNT_ID/g; s/<REGION>/$AWS_DEFAULT_REGION/g" pipeline/taskdef.json > taskdef.json
+      - cp pipeline/appspec.yaml appspec.yaml
 artifacts:
-  files: [imageDetail.json]
+  files:
+    - imageDetail.json
+    - taskdef.json
+    - appspec.yaml

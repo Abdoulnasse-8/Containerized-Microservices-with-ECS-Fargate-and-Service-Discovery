@@ -170,14 +170,14 @@ resource "aws_codepipeline" "orders" {
       owner           = "AWS"
       provider        = "CodeDeployToECS"
       version         = "1"
-      input_artifacts = ["build", "src"]
+      input_artifacts = ["build"]
       configuration = {
         ApplicationName                = aws_codedeploy_app.orders.name
         DeploymentGroupName            = aws_codedeploy_deployment_group.orders.deployment_group_name
-        TaskDefinitionTemplateArtifact = "src"
-        TaskDefinitionTemplatePath     = "pipeline/taskdef.json"
-        AppSpecTemplateArtifact        = "src"
-        AppSpecTemplatePath            = "pipeline/appspec.yaml"
+        TaskDefinitionTemplateArtifact = "build"
+        TaskDefinitionTemplatePath     = "taskdef.json"
+        AppSpecTemplateArtifact        = "build"
+        AppSpecTemplatePath            = "appspec.yaml"
         Image1ArtifactName             = "build"
         Image1ContainerName            = "IMAGE1_NAME"
       }

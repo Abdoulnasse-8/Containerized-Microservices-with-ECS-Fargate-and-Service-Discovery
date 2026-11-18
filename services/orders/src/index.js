@@ -25,7 +25,11 @@ function call(method, url, headers = {}, body) {
   });
 }
 
-app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'orders', version: process.env.APP_VERSION || 'v1' }));
+app.get('/health', (_req, res) => {
+  // Démo du rollback : construire l'image avec APP_VERSION=bad rend le health check KO
+  if (process.env.APP_VERSION === 'bad') return res.status(500).json({ status: 'unhealthy' });
+  res.json({ status: 'ok', service: 'orders', version: process.env.APP_VERSION || 'v1' });
+});
 app.get('/', (_req, res) => res.json({ service: 'orders', version: process.env.APP_VERSION || 'v1' }));
 
 app.use('/api/orders', async (req, res, next) => {
